@@ -1,0 +1,7 @@
+optimizer,best_val_accuracy,best_epoch
+Adam,75.6,9
+Nadam,74.18,10
+RMSprop,66.3,10
+Nesterov-SGD,60.44,10
+Adagrad,55.42,8
+SGD,43.08,9

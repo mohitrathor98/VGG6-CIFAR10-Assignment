@@ -1,0 +1,8 @@
+# Install a PyTorch build appropriate for your CPU/CUDA environment first:
+# https://pytorch.org/get-started/locally/
+torch
+torchvision
+numpy
+Pillow
+pandas
+wandb==0.28.1
