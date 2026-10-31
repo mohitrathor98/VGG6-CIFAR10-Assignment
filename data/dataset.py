@@ -47,7 +47,10 @@ def create_datasets(root="./data", download=True, seed=42):
                                     transform=eval_transform)
 
     # Same deterministic split as the notebook: 45,000 train and 5,000 validation.
-    indices = np.random.RandomState(seed).permutation(len(train_augmented))
+    # Match the notebook split: seed NumPy, then permute the 50,000
+    # training examples and use the first 45,000 for training.
+    np.random.seed(seed)
+    indices = np.random.permutation(len(train_augmented))
     train_indices, val_indices = indices[:45000], indices[45000:]
     return (Subset(train_augmented, train_indices),
             Subset(train_clean, val_indices), test_dataset)

@@ -1,88 +1,143 @@
 # VGG6 on CIFAR-10
 
-A modular PyTorch implementation of the VGG6 CIFAR-10 assignment. The project
-contains the model, data pipeline, training/evaluation routines, optimizer
-factory, seed helper, and a command-line training entry point.
+**Course:** CS6886W – Systems Engineering for Deep Learning  
+**Assignment:** Assignment 1  
+**Institution:** Department of Computer Science and Engineering, IIT Madras
 
-## Architecture and data
+This repository contains the experiment notebook and a modular PyTorch implementation for training and evaluating a VGG6 model on CIFAR-10. It covers baseline training, activation-function comparisons, optimizer comparisons, hyperparameter experiments, W&B sweeps, and reproduction of the selected configuration.
 
-- VGG6 configuration: `[64, 64, 'M', 128, 128, 'M']`
-- 10 output classes.
-- Batch normalization enabled.
-- CIFAR-10 normalization:
-  - mean `(0.4914, 0.4822, 0.4465)`
-  - standard deviation `(0.2023, 0.1994, 0.2010)`
-- Training augmentation: random crop with padding 4, random horizontal flip,
-  and Cutout (one hole, length 16).
-- Evaluation/test transforms: tensor conversion and normalization only.
-- Deterministic split: 45,000 training images and 5,000 validation images.
+## Repository links
 
-## Environment
+- **GitHub repository:** https://github.com/mohitrathor98/VGG6-CIFAR10-Assignment
+- **W&B baseline run:** https://wandb.ai/cs25m518-indian-institute-of-technology-madras/VGG6-CIFAR10-Assignment1/runs/ztcqjxc9
+- **W&B sweep dashboard:** https://wandb.ai/cs25m518-indian-institute-of-technology-madras/VGG6-CIFAR10-Assignment1/sweeps/pjyaw4dz
 
-The experiments were run in Google Colab with a Tesla T4 GPU and W&B 0.28.1.
-Install PyTorch and torchvision using the command recommended by the official
-PyTorch selector for the target machine. Then install the remaining packages:
+## Project contents
 
-```bash
-pip install -r requirements.txt
+```text
+.
+├── A1_VGG6_Experiments.ipynb
+├── main.py
+├── requirements.txt
+├── environment_report.py
+├── .gitignore
+├── models/
+│   └── vgg6.py
+├── data/
+│   └── dataset.py
+├── training/
+│   ├── train.py
+│   └── evaluate.py
+├── utils/
+│   ├── optimizers.py
+│   └── seed.py
+├── checkpoints/
+│   └── best_vgg6_q4.pth
+└── results/
+    ├── optimizer_results.csv
+    └── plots/
+        ├── q1_baseline_loss.png
+        ├── q1_baseline_accuracy.png
+        └── [six exported W&B charts]
 ```
 
-The notebook output records W&B 0.28.1. Exact versions of every other
-dependency were not recorded in the supplied notebook, so this repository
-does not claim unverified version pins.
+## Model and data configuration
 
-## Reproduce Q4
+- VGG6 feature configuration: `[64, 64, 'M', 128, 128, 'M']`
+- Number of classes: 10
+- Batch normalization: enabled
+- CIFAR-10 mean: `(0.4914, 0.4822, 0.4465)`
+- CIFAR-10 standard deviation: `(0.2023, 0.1994, 0.2010)`
+- Training augmentation: random crop (32 × 32, padding 4), random horizontal flip, tensor conversion, normalization, and Cutout (one hole, length 16).
+- Validation/test preprocessing: tensor conversion and normalization, without training augmentation.
+- Dataset split: 45,000 training images and 5,000 validation images from the 50,000-image CIFAR-10 training set; 10,000 test images.
+- The modular data loader uses the same NumPy seed-and-permutation split procedure as the experiment notebook.
 
-From the repository root:
+## Selected configuration and reported result
 
-```bash
-python main.py --activation silu --optimizer Adam --lr 0.01 \
-  --batch-size 64 --epochs 10 --seed 42
-```
+The highest validation accuracy in the W&B sweep was obtained with:
 
-CIFAR-10 is downloaded automatically into `./data` if it is not already
-present. The best validation checkpoint is saved to
-`checkpoints/best_vgg6_q4.pth`. The script then evaluates that checkpoint on
-the test set.
-
-## Random seed
-
-The experiment seed is 42 by default. `utils/seed.py` seeds Python, NumPy,
-PyTorch CPU and CUDA generators, and enables deterministic cuDNN behavior.
-Exact bit-for-bit reproduction can still depend on library versions and
-hardware.
-
-## Assignment results
-
-The best W&B sweep configuration was:
-
-| Parameter | Value |
-|---|---|
+| Parameter | Selected value |
+|---|---:|
 | Activation | SiLU |
 | Optimizer | Adam |
 | Learning rate | 0.01 |
 | Batch size | 64 |
 | Epochs | 10 |
 | Seed | 42 |
-| Validation accuracy | 83.95% |
+| Best validation accuracy | 83.95% |
 
-The Q4 reproduction run also reported 83.95% validation accuracy. See the
-W&B sweep and run pages in the submitted report for experiment records.
+The Q4 reproduction reported 83.95% validation accuracy. The submitted checkpoint is `checkpoints/best_vgg6_q4.pth`.
 
-## Repository layout
+The Q1 baseline test result was **74.98% top-1 accuracy**, with test loss **0.7438**. The baseline's best validation accuracy was 75.08% at epoch 9.
 
-- `models/vgg6.py`: VGG6 architecture and activation factory.
-- `data/dataset.py`: CIFAR-10 transforms, split, and data loaders.
-- `training/train.py`: training loop for one epoch.
-- `training/evaluate.py`: validation/test evaluation.
-- `utils/optimizers.py`: six optimizer options used in the experiments.
-- `utils/seed.py`: random seed setup.
-- `main.py`: command-line training, best-checkpoint saving, and test evaluation.
-- `checkpoints/`: model checkpoint.
-- `results/`: experiment result tables.
+## Environment and dependencies
 
-## Notes
+The experiments were run in Google Colab using a Tesla T4 GPU. W&B version `0.28.1` is recorded in the experiment environment. The exact versions of the other libraries should be captured from the original Colab runtime and recorded in `environment.txt`; do not infer versions from a different machine.
 
-This code modularizes the implementation used for the assignment. The
-`main.py` entry point reproduces the selected Q4 configuration; it does not
-automatically run every Q2 comparison or the W&B sweep.
+### Capture the original Colab environment
+
+In the original Colab notebook/runtime used for the experiments, run this cell and save its output as `environment.txt` in the repository:
+
+```python
+import sys
+import torch
+import torchvision
+import numpy
+import PIL
+import pandas
+import wandb
+
+print("Python:", sys.version)
+print("PyTorch:", torch.__version__)
+print("Torchvision:", torchvision.__version__)
+print("NumPy:", numpy.__version__)
+print("Pillow:", PIL.__version__)
+print("Pandas:", pandas.__version__)
+print("Weights & Biases:", wandb.__version__)
+print("CUDA available:", torch.cuda.is_available())
+print("CUDA runtime:", torch.version.cuda)
+if torch.cuda.is_available():
+    print("GPU:", torch.cuda.get_device_name(0))
+```
+
+`requirements.txt` lists the required packages. Install a PyTorch/torchvision build compatible with the target machine's CPU or CUDA environment using the official PyTorch installation selector, then install the remaining dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+For a reproducible environment, use the recorded `environment.txt` versions when recreating the experiment environment.
+
+## Reproducing the selected Q4 configuration
+
+From the repository root:
+
+```bash
+python main.py --activation silu --optimizer Adam --lr 0.01 --batch-size 64 --epochs 10 --seed 42
+```
+
+The CIFAR-10 dataset is downloaded to `./data` if it is not already present. The script trains the selected configuration, saves the best validation checkpoint to `checkpoints/best_vgg6_q4.pth`, and evaluates that checkpoint on the test set.
+
+To run on CPU, the script automatically selects CPU when CUDA is unavailable. Training time will be substantially longer than on a GPU.
+
+## Random seed and reproducibility
+
+The default seed is 42. `utils/seed.py` seeds Python, NumPy, PyTorch CPU, and CUDA random number generators when CUDA is available. It also enables deterministic cuDNN behavior and disables cuDNN benchmarking.
+
+Exact bit-for-bit reproducibility can still depend on the PyTorch/CUDA versions, hardware, and nondeterministic operations. Record the runtime environment alongside results.
+
+## Code organization
+
+- `models/vgg6.py`: VGG6 architecture and activation-function factory.
+- `data/dataset.py`: CIFAR-10 transforms, Cutout, train/validation split, and data loaders.
+- `training/train.py`: one-epoch training routine.
+- `training/evaluate.py`: validation/test evaluation routine.
+- `utils/optimizers.py`: optimizer factory for SGD, Nesterov-SGD, Adam, Adagrad, RMSprop, and Nadam.
+- `utils/seed.py`: random-seed setup.
+- `main.py`: command-line training and evaluation entry point.
+- `A1_VGG6_Experiments.ipynb`: experiment notebook containing the assignment experiments.
+- `results/`: exported plots and optimizer results.
+- `checkpoints/`: selected trained model checkpoint.
+
+**Scope note:** `main.py` reproduces the selected Q4 configuration. The full Q2 comparisons and W&B sweep are documented in the experiment notebook and W&B dashboard; `main.py` does not launch all those experiments automatically.
