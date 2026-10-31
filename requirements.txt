@@ -1,8 +1,9 @@
-# Install a PyTorch build appropriate for your CPU/CUDA environment first:
-# https://pytorch.org/get-started/locally/
-torch
-torchvision
-numpy
-Pillow
-pandas
+# Python package versions reported by the Colab environment.
+# The current runtime query was CPU-only; earlier experiments used a GPU.
+# Install the PyTorch build appropriate to the accelerator available when rerunning.
+torch==2.11.0
+torchvision==0.26.0
+numpy==2.1.3
+Pillow==11.3.0
+pandas==2.2.3
 wandb==0.28.1
